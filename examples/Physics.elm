@@ -1,11 +1,12 @@
-import Focus (..)
+import Focus exposing (..)
+import Graphics.Element exposing (Element, show)
 
-type Point =
+type alias Point =
     { x : Float
     , y : Float
     }
 
-type Object =
+type alias Object =
     { position : Point
     , velocity : Point
     }
@@ -23,22 +24,22 @@ physics dt object =
         |> update (position => y) (\py -> py + object.velocity.y * dt)
 
 main : Element
-main = asText (physics 1 object)
+main = show (physics 1 object)
 
 
 -- Create all of the Foci
 
 x : Focus { r | x:a } a
-x = create .x (\f r -> { r | x <- f r.x })
+x = create .x (\x r -> { r | x <- x })
 
 y : Focus { r | y:a } a
-y = create .y (\f r -> { r | y <- f r.y })
+y = create .y (\y r -> { r | y <- y })
 
 position : Focus { r | position:a } a
 position =
-    create .position (\f r -> { r | position <- f r.position })
+    create .position (\x r -> { r | position <- x })
 
 velocity : Focus { r | velocity:a } a
 velocity =
-    create .velocity (\f r -> { r | velocity <- f r.velocity })
+    create .velocity (\x r -> { r | velocity <- x })
 

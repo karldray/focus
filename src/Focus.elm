@@ -31,16 +31,16 @@ creating lots of intermediate data structures for no particular reason.
 
 type alias Focus big small =
     { get : big -> small
-    , update : (small -> small) -> big -> big
+    , set : small -> big -> big
     }
 
-{-| A `Focus` is a value. It describes a strategy for getting and updating
+{-| A `Focus` is a value. It describes a strategy for getting and setting
 things. This function lets you define a `Focus` yourself by providing a `get`
-function and an `update` function.
+function and a `set` function.
 -}
-create : (big -> small) -> ((small -> small) -> big -> big) -> Focus big small
-create get update =
-    { get=get, update=update }
+create : (big -> small) -> (small -> big -> big) -> Focus big small
+create get set =
+    { get=get, set=set }
 
 {-| Get a small part of a big thing.
 
@@ -52,8 +52,7 @@ Seems sort of silly given that you can just say `.x` to do the same thing. It
 will become much more useful when we can begin to compose foci, so keep reading!
 -} 
 get : Focus big small -> big -> small
-get focus big =
-    focus.get big
+get = .get
 
 {-| Set a small part of a big thing.
 
@@ -62,8 +61,7 @@ get focus big =
     set x 42 { x=3, y=4 } == { x=42, y=4 }
 -}
 set : Focus big small -> small -> big -> big
-set focus small big =
-    focus.update (always small) big
+set = .set
 
 {-| Update a small part of a big thing.
 
@@ -86,7 +84,7 @@ best to use a mix `Focus` and typical record updates to minimize traversals.
 -}
 update : Focus big small -> (small -> small) -> big -> big
 update focus f big =
-    focus.update f big
+    focus.set (f (focus.get big)) big
 
 -- COMPOSING FOCI
 
@@ -118,6 +116,6 @@ record updates so that this can be done in one pass.
 -}
 (=>) : Focus big medium -> Focus medium small -> Focus big small
 (=>) largerFocus smallerFocus =
-    { get big = smallerFocus.get (largerFocus.get big)
-    , update f big = largerFocus.update (smallerFocus.update f) big
+    { get = get largerFocus >> get smallerFocus
+    , set = set smallerFocus >> update largerFocus
     }
